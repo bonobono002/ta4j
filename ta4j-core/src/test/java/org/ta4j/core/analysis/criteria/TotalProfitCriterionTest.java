@@ -31,6 +31,17 @@ import static org.junit.Assert.*;
 public class TotalProfitCriterionTest {
 
     @Test
+    public void calculateWithTradingFee() {
+        MockTimeSeries series = new MockTimeSeries(100, 105, 110, 100, 95, 105);
+        TradingRecord tradingRecord = new BaseTradingRecord(
+                Order.buyAt(0,series), Order.sellAt(2,series),
+                Order.buyAt(3,series), Order.sellAt(5,series));
+
+        AnalysisCriterion profit = new TotalProfitCriterion(0.005);
+        assertEquals(1.1321292789782431, profit.calculate(series, tradingRecord), TATestsUtils.TA_OFFSET);
+    }
+
+    @Test
     public void calculateOnlyWithGainTrades() {
         MockTimeSeries series = new MockTimeSeries(100, 105, 110, 100, 95, 105);
         TradingRecord tradingRecord = new BaseTradingRecord(

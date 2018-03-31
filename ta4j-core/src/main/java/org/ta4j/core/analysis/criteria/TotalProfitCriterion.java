@@ -34,6 +34,17 @@ import org.ta4j.core.TradingRecord;
  */
 public class TotalProfitCriterion extends AbstractAnalysisCriterion {
 
+    double tradingFee = 0.0d;
+
+
+    public TotalProfitCriterion() {
+
+    }
+
+    public TotalProfitCriterion(double tradingFee){
+        this.tradingFee = tradingFee;
+    }
+
     @Override
     public double calculate(TimeSeries series, TradingRecord tradingRecord) {
         double value = 1d;
@@ -65,10 +76,16 @@ public class TotalProfitCriterion extends AbstractAnalysisCriterion {
             // use price of entry/exit order, if NaN use close price of underlying time series
             Decimal exitClosePrice = trade.getExit().getPrice().isNaN() ?
                     series.getBar(trade.getExit().getIndex()).getClosePrice() : trade.getExit().getPrice();
+            if(tradingFee!=0.0d){
+                exitClosePrice = exitClosePrice.minus(exitClosePrice.multipliedBy(tradingFee));
+            }
+
             Decimal entryClosePrice = trade.getEntry().getPrice().isNaN() ?
                     series.getBar(trade.getEntry().getIndex()).getClosePrice() : trade.getEntry().getPrice();
-
-
+            if(tradingFee!=0.0d)
+            {
+                entryClosePrice = entryClosePrice.plus(entryClosePrice.multipliedBy(tradingFee));
+            }
 
             if (trade.getEntry().isBuy()) {
                 profit = exitClosePrice.dividedBy(entryClosePrice);
