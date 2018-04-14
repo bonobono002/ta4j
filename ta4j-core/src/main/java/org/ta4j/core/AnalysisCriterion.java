@@ -22,6 +22,7 @@
  */
 package org.ta4j.core;
 
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -49,20 +50,31 @@ public interface AnalysisCriterion {
      */
     double calculate(TimeSeries series, TradingRecord tradingRecord);
 
+
+    default Strategy chooseBest(TimeSeriesManager manager, List<Strategy> strategies) {
+        return this.chooseBest(manager, strategies, null);
+    }
+
     /**
      * @param manager the time series manager
      * @param strategies a list of strategies
      * @return the best strategy (among the provided ones) according to the criterion
      */
-    default Strategy chooseBest(TimeSeriesManager manager, List<Strategy> strategies) {
+    default Strategy chooseBest(TimeSeriesManager manager, List<Strategy> strategies, HashMap<String, Double> resultList) {
 
         Strategy bestStrategy = strategies.get(0);
         double bestCriterionValue = calculate(manager.getTimeSeries(), manager.run(bestStrategy));
-
+        if(resultList != null){
+            resultList.put(bestStrategy.getName(), bestCriterionValue);
+        }
+        Strategy currentStrategy;
+        double currentCriterionValue;
         for (int i = 1; i < strategies.size(); i++) {
-            Strategy currentStrategy = strategies.get(i);
-            double currentCriterionValue = calculate(manager.getTimeSeries(), manager.run(currentStrategy));
-
+            currentStrategy = strategies.get(i);
+            currentCriterionValue = calculate(manager.getTimeSeries(), manager.run(currentStrategy));
+            if(resultList != null){
+                resultList.put(currentStrategy.getName(), currentCriterionValue);
+            }
             if (betterThan(currentCriterionValue, bestCriterionValue)) {
                 bestStrategy = currentStrategy;
                 bestCriterionValue = currentCriterionValue;
